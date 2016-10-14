@@ -11,6 +11,9 @@ function Controller(port, bogie, ws) {
     this.dataLogIntervalFunc = null;
     this.dataLogInterval = 100;
     this.speedCommand = null;
+    this.errorResponse = 0;
+    this.errorTimeout = 1000;
+    this.maxErrorCount = 10;
     this.ws = ws;
     var self = this;
     this.connect(port).then(function(port) {
@@ -25,26 +28,40 @@ Controller.prototype.log = function(message) {
     console.log('Cont #'+this.bogie+': '+message);
 }
 
+Controller.prototype.increaseErrorCount = function() {
+    var self = this;
+    this.errorResponse = this.errorResponse + 1;
+    // Is it too high?
+    if(this.errorReponse >= 10) {
+        this.log('Error! '+this.maxErrorCount+' errors recorded in '+this.errorTimeout+'ms. Stopping process.');
+        process.exit();
+    } else {
+        // Set a timer to decrease the count after the timeout has passed
+        setTimeout(function() {
+            self.errorResponse = self.errorResponse - 1;
+        }, this.errorTimeout);
+    }
+}
+
 Controller.prototype.processData = function(data) {
     var self = this;
 
     if(data.charAt(0) == '-') {
-        self.log('Invalid command/response');
-        process.exit();
+        self.log('Invalid command/response: '+data);
+        self.increaseErrorCount();
     }
 
     if(data.charAt(0) == '?') {
         return;
         // Just a echo
     }
-//console.log(data);
+
     switch(data.charAt(0)) {
         case "T":
             var temps = data.substring(2, data.length).split(':');
             var internal = temps[0];
             var chan1 = temps[1];
             var chan2 = temps[2];
-            //self.log('Int: '+internal+'C - Chan1: '+chan1+'C - Chan2: '+chan2+'C');
             var largest = Math.max(internal, chan1, chan2);
             this.ws.connections.forEach(function (conn) {
                 conn.sendText('T:'+self.bogie+':'+largest);
