@@ -37,7 +37,7 @@ Controller.prototype.processData = function(data) {
         return;
         // Just a echo
     }
-
+//console.log(data);
     switch(data.charAt(0)) {
         case "T":
             var temps = data.substring(2, data.length).split(':');
@@ -72,11 +72,11 @@ Controller.prototype.processData = function(data) {
     if(data.charAt(0) == 'F' && data.charAt(1) =='F') {
         // Update the fault flags
         var code = parseInt(data.substring(3, data.length));
-        if(code != 0) {
+	if(code != 0) {
             //self.log('FAULT! Code: '+code); // TODO set only on change
         }
         this.ws.connections.forEach(function (conn) {
-            conn.sendText('F:'+self.bogie+':'+code);
+            conn.send('F:'+self.bogie+':'+code);
         });
     }
 }
@@ -93,7 +93,8 @@ Controller.prototype.startDataLogging2 = function(port, bogie) {
 
 Controller.prototype.requestData = function(port) {
     // Request all the data we need
-    port.write('?V\r');
+//console.log('requesting data');
+port.write('?V\r');
     port.write('?T\r');
     port.write('?BA\r');
     port.write('?FF\r');

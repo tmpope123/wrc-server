@@ -20,8 +20,10 @@ var rpio = require('rpio');
 rpio.open(29, rpio.OUTPUT, rpio.LOW);
 rpio.open(31, rpio.OUTPUT, rpio.LOW);
 rpio.open(33, rpio.OUTPUT, rpio.LOW);
-rpio.open(32, rpio.INPUT, rpio.LOW);
-rpio.open(36, rpio.INPUT, rpio.LOW);
+//rpio.open(32, rpio.INPUT);
+//rpio.open(36, rpio.INPUT);
+rpio.open(35, rpio.INPUT);
+
 
 var Controller = require('./controller.js');
 var serialPort = require("serialport");
@@ -96,7 +98,7 @@ function Locomotive(){
                 rpio.write(33, rpio.HIGH);
                 setTimeout(function() {
                     rpio.write(33, rpio.LOW);
-                }, 1000);
+                }, 200);
             }
 
             if(pieces[0] == 'O') {
@@ -119,17 +121,34 @@ function Locomotive(){
         baudrate: 115200
     }, false);
     this.controllers.push(new Controller(c1Port, 1, this.wsServer));
+/*
     var c2Port = new SerialPort('/dev/ttyUSB1', {
         parser: serialPort.parsers.readline("\r"),
         baudrate: 115200
     }, false);
     this.controllers.push(new Controller(c2Port, 2, this.wsServer));
-
+*/
     // Set to the safe state
-    rpio.write(29, rpio.HIGH);
+    if(!rpio.read(35)) {
+        console.log('Unsafe, fix tether and estop');
+        process.exit();
+    } else {
+        rpio.write(29, rpio.HIGH);
+        console.log('setting estop command to safe');
+
+        rpio.poll(10, function() {
+            // Do this every 10 ms
+            if(!rpio.read(35)) {
+                console.log('Unsafe detected');
+                process.exit();
+            }
+        });
+
+    }
 
 }
 
+/*
 Locomotive.prototype.watchHeartbeat = function() {
     // Now start listening for the heartbeat
     this.safe = true;
@@ -140,6 +159,7 @@ Locomotive.prototype.watchHeartbeat = function() {
         this.safe = false;
     }, 150);
 }
+*/
 
 Locomotive.prototype.setBrakes = function(enabled) {
     if(enabled) {
@@ -153,6 +173,7 @@ Locomotive.prototype.setBrakes = function(enabled) {
     //this.triggerPump();
 }
 
+/*
 // Hack to trigger the vacuum pump
 Locomotive.prototype.triggerPump = function(time) {
     if(typeof time == undefined || time<0 || time > 100) {
@@ -167,6 +188,7 @@ Locomotive.prototype.triggerPump = function(time) {
     }, pumpOnTime);
 
 }
+*/
 
 Locomotive.prototype.setSpeed = function(speed) {
     this.controllers.forEach(function sendSpeedToController(controller) {
@@ -179,6 +201,7 @@ Locomotive.prototype.setSpeed = function(speed) {
 Locomotive.prototype.estop = function(reason) {
     this.setBrakes(true);
     this.setSpeed(0);
+    rpio.write(29, rpio.LOW);
     console.log('ESTOP triggered! Reason: '+reason);
 }
 
