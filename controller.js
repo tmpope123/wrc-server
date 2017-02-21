@@ -111,10 +111,10 @@ Controller.prototype.startDataLogging2 = function(port, bogie) {
 Controller.prototype.requestData = function(port) {
     // Request all the data we need
 //console.log('requesting data');
-port.write('?V\r');
-    port.write('?T\r');
-    port.write('?BA\r');
-    port.write('?FF\r');
+	port.write('?V\r');
+	port.write('?T\r');
+	port.write('?BA\r');
+	port.write('?FF\r');
 }
 
 Controller.prototype.setSpeed = function(speed) {
