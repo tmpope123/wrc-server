@@ -16,6 +16,8 @@
 
 // Add the rpio library
 
+// Serial connection to Arduino Mega 2460
+
 var rpio = require('rpio');
 rpio.open(29, rpio.OUTPUT, rpio.LOW);
 rpio.open(31, rpio.OUTPUT, rpio.LOW);
@@ -121,13 +123,13 @@ function Locomotive(){
         baudrate: 115200
     }, false);
     this.controllers.push(new Controller(c1Port, 1, this.wsServer));
-/*
+
     var c2Port = new SerialPort('/dev/ttyUSB1', {
         parser: serialPort.parsers.readline("\r"),
         baudrate: 115200
     }, false);
     this.controllers.push(new Controller(c2Port, 2, this.wsServer));
-*/
+    
     // Set to the safe state
     if(!rpio.read(35)) {
         console.log('Unsafe, fix tether and estop');
