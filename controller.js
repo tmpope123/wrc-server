@@ -10,7 +10,8 @@ function Controller(port, bogie, ws) {
     this.sp = null; // Hold the serial port
     this.dataLogIntervalFunc = null;
     this.dataLogInterval = 100;
-    this.speedCommand = null;
+    this.speedCommand1 = null;
+    this.speedCommand2 = null;
     this.errorResponse = 0;
     this.errorTimeout = 1000;
     this.maxErrorCount = 10;
@@ -117,9 +118,10 @@ Controller.prototype.requestData = function(port) {
 	port.write('?FF\r');
 }
 
-Controller.prototype.setSpeed = function(speed) {
-    if(speed <= 1000 && speed >= -1000) {
-        this.speedCommand = speed;
+Controller.prototype.setSpeed = function(speed1, speed2) {
+    if((speed1 <= 1000 && speed1 >= -1000) && (speed2 <= 1000 && speed2 >= -1000)) {
+        this.speedCommand1 = speed1;
+	this.speedCommand2 = speed2;
     }
 }
 
@@ -128,9 +130,9 @@ Controller.prototype.startSendingSpeed = function(port) {
 }
 
 Controller.prototype.sendSpeed = function(self, port) {
-    if(self.speedCommand != null) {
-        port.write('!G 1 '+self.speedCommand+'\r');
-        port.write('!G 2 '+self.speedCommand+'\r');
+    if((self.speedCommand1 != null) && self.speedCommand2 != null)) {
+        port.write('!G 1 '+self.speedCommand1+'\r');
+        port.write('!G 2 '+self.speedCommand2+'\r');
     }
 }
 
