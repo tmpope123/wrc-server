@@ -193,6 +193,7 @@ Locomotive.prototype.triggerPump = function(time) {
 */
 
 Locomotive.prototype.setSpeed = function(speed) {
+    //for (var i = 0; i < 2; i++) {
     this.controllers.forEach(function sendSpeedToController(controller) {
         if(speed == 0 || !this.brakes) {
             controller.setSpeed(speed);
